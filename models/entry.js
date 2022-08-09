@@ -6,6 +6,7 @@ const entrySchema = new mongoose.Schema(
     vehicle: String,
     startLocation: String,
     endLocation: String,
+    googleId: String,
   },
   { timestamps: true }
 );
