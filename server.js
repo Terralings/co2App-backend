@@ -52,13 +52,13 @@ app.use(async (req, res, next) => {
   next();
 });
 
-function isAuthenticated(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({ message: "you must be logged in" });
-  } else {
-    return next();
-  }
-}
+// function isAuthenticated(req, res, next) {
+//   if (!req.user) {
+//     return res.status(401).json({ message: "you must be logged in" });
+//   } else {
+//     return next();
+//   }
+// }
 
 // root page
 app.get("/", (req, res) => {
@@ -66,18 +66,20 @@ app.get("/", (req, res) => {
 });
 
 //GET
-app.get("/home", isAuthenticated, async (req, res) => {
+app.get("/home", async (req, res) => {
   try {
-    res.json(await Entry.find({ googleId }));
+    res.json(await Entry.find());
   } catch (error) {
     console.log("error: " + error);
     res.json({ error: "something went wrong" });
   }
 });
 //CREATE
-app.post("/home", isAuthenticated, async (req, res) => {
+app.post("/home", async (req, res) => {
   try {
-    req.body.googleId = req.user.uid;
+    // req.body.googleId = req.user.uid;
+    // console.log(req.body);
+    // console.log(req.user.uid);
     res.json(await Entry.create(req.body));
   } catch (error) {
     console.log("error: " + error);
@@ -86,7 +88,7 @@ app.post("/home", isAuthenticated, async (req, res) => {
 });
 
 //UPDATE
-app.put("/home/:id", isAuthenticated, async (req, res) => {
+app.put("/home/:id", async (req, res) => {
   try {
     res.json(
       await Entry.findByIdAndUpdate(req.params.id, req.body, { new: true })
@@ -97,7 +99,7 @@ app.put("/home/:id", isAuthenticated, async (req, res) => {
   }
 });
 //DELETE
-app.delete("/home/:id", isAuthenticated, async (req, res) => {
+app.delete("/home/:id", async (req, res) => {
   try {
     res.json(
       await Entry.findByIdAndDelete(req.params.id, req.body, { new: true })

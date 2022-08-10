@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const entrySchema = new mongoose.Schema(
   {
     date: String,
-    vehicle: String,
-    startLocation: String,
-    endLocation: String,
+    // vehicle: String,
+    distance: Number,
+    carbon: String,
     googleId: String,
   },
   { timestamps: true }
