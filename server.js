@@ -35,30 +35,41 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 //AUTHORIZATION MIDDLEWARE(google firebase)
+// app.use(async (req, res, next) => {
+//   const token = req.get("Authorization");
+//   if (token) {
+//     try {
+//       const user = await admin
+//         .auth()
+//         .verifyIdToken(token.replace("Bearer ", ""));
+//       req.user = user;
+//     } catch (error) {
+//       req.user = null;
+//     }
+//   } else {
+//     req.user = null;
+//   }
+//   next();
+// });
+
 app.use(async (req, res, next) => {
   const token = req.get("Authorization");
   if (token) {
-    try {
-      const user = await admin
-        .auth()
-        .verifyIdToken(token.replace("Bearer ", ""));
-      req.user = user;
-    } catch (error) {
-      req.user = null;
-    }
+    const user = await admin.auth().verifyIdToken(token.replace("Bearer ", ""));
+    req.user = user;
   } else {
     req.user = null;
   }
   next();
 });
 
-// function isAuthenticated(req, res, next) {
-//   if (!req.user) {
-//     return res.status(401).json({ message: "you must be logged in" });
-//   } else {
-//     return next();
-//   }
-// }
+function isAuthenticated(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ message: "you must be logged in" });
+  } else {
+    return next();
+  }
+}
 
 // root page
 app.get("/", (req, res) => {
@@ -66,16 +77,21 @@ app.get("/", (req, res) => {
 });
 
 //GET
-app.get("/home", async (req, res) => {
+app.get("/home", isAuthenticated, async (req, res) => {
   try {
-    res.json(await Entry.find());
+    // console.log(req.token);
+    const reqcarbon = res.carbon;
+    const userID = req.user.uid;
+    // console.log("body carbon: " + reqcarbon);
+    // console.log("user: " + userID);
+    res.json(await Entry.find({ googleId: userID }));
   } catch (error) {
     console.log("error: " + error);
     res.json({ error: "something went wrong" });
   }
 });
 //CREATE
-app.post("/home", async (req, res) => {
+app.post("/home", isAuthenticated, async (req, res) => {
   try {
     // req.body.googleId = req.user.uid;
     // console.log(req.body);
@@ -88,7 +104,7 @@ app.post("/home", async (req, res) => {
 });
 
 //UPDATE
-app.put("/home/:id", async (req, res) => {
+app.put("/home/:id", isAuthenticated, async (req, res) => {
   try {
     res.json(
       await Entry.findByIdAndUpdate(req.params.id, req.body, { new: true })
@@ -99,7 +115,7 @@ app.put("/home/:id", async (req, res) => {
   }
 });
 //DELETE
-app.delete("/home/:id", async (req, res) => {
+app.delete("/home/:id", isAuthenticated, async (req, res) => {
   try {
     res.json(
       await Entry.findByIdAndDelete(req.params.id, req.body, { new: true })
